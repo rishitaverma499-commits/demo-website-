@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inkwell – Write, speak and learn English</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Literata:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3fa;--card:#fff;--ink:#14213d;--mut:#5a6785;--line:#d3ddef;--acc:#ffb703;--pen:#d62839;--ok:#1f8a62;--blue:#2a4fd6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1424;--card:#172038;--ink:#eaf0ff;--mut:#9aa7c7;--line:#2a3658;--blue:#8aa4ff}}
+:root[data-theme="dark"]{--bg:#0e1424;--card:#172038;--ink:#eaf0ff;--mut:#9aa7c7;--line:#2a3658;--blue:#8aa4ff}
+*{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Bricolage Grotesque",system-ui,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:clamp(2rem,7vw,3.2rem);line-height:1.05;margin:8px 0 6px;font-weight:800;letter-spacing:-.02em}
+h1 mark{background:linear-gradient(transparent 55%,var(--acc) 55%);color:inherit;padding:0 .1em}
+.sub{color:var(--mut);margin:0 0 20px;max-width:56ch}
+nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px}
+nav button{flex:none;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:700;padding:9px 14px;border-radius:999px;cursor:pointer}
+nav button[aria-selected=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.prompt{font-family:Literata,Georgia,serif;font-size:1.15rem;margin:0 0 12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--ink);color:var(--bg)}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn.go{background:var(--acc);color:#14213d}
+.btn:disabled{opacity:.5;cursor:default}
+textarea,input[type=text]{width:100%;border:2px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:12px;font:1.05rem/1.7 Literata,Georgia,serif}
+textarea{min-height:220px;resize:vertical;background-image:repeating-linear-gradient(transparent 0 1.65em,var(--line) 1.65em calc(1.65em + 1px));background-attachment:local}
+.meta{color:var(--mut);font-size:.9rem;margin-left:auto}
+.timer{font-size:3.4rem;font-weight:800;font-variant-numeric:tabular-nums;margin:4px 0}
+.timer.low{color:var(--pen)}
+.tip{border-left:5px solid var(--acc);padding:4px 12px;margin:10px 0}
+.eval{display:none}.eval.show{display:block}
+.score{display:grid;grid-template-columns:110px 1fr 32px;gap:8px;align-items:center;margin:6px 0;font-size:.95rem}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
+.big{font-size:2.6rem;font-weight:800;line-height:1}
+.good li::marker{color:var(--ok)}.fix li::marker{color:var(--pen)}
+.eval h3{margin:14px 0 4px;font-size:1.05rem}
+.rewrite{font-family:Literata,Georgia,serif;background:var(--bg);border-radius:10px;padding:10px 12px}
+.err{color:var(--pen)}
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.vocab div{background:var(--bg);border-radius:10px;padding:10px}.vocab b{display:block}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .6s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Inkwell: <mark>write, speak</mark> and learn English</h1>
+<p class="sub">Practise essays, articles and stories, learn something new, or give a 2-minute speech. Your AI coach scores every attempt and shows you how to improve.</p>
+<nav role="tablist" id="tabs"></nav>
+
+<section id="essay"></section>
+<section id="creative"></section>
+<section id="learn">
+  <div class="card">
+    <h2 style="margin-top:0">Today's mini-lesson</h2>
+    <div id="lesson"></div>
+    <div class="row" style="margin-top:10px"><button class="btn alt" id="nextLesson">Next lesson</button></div>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">Use it in your own sentences</h2>
+    <p class="sub" style="margin-bottom:8px">Write 2–4 sentences using today's grammar point or words. The coach will correct them.</p>
+    <textarea id="learnText" style="min-height:120px" placeholder="Type your sentences here..."></textarea>
+    <div class="row" style="margin-top:10px"><button class="btn go" id="learnEval">Check my English</button><span class="meta" id="learnWc">0 words</span></div>
+  </div>
+  <div class="card eval" id="learnOut"></div>
+</section>
+<section id="speech">
+  <div class="card">
+    <p class="sub" style="margin-bottom:6px">Your topic</p>
+    <p class="prompt" id="topic"></p>
+    <div class="row"><button class="btn alt" id="newTopic">New topic</button></div>
+    <div class="timer" id="clock">2:00</div>
+    <div class="row"><button class="btn go" id="start">Start speaking</button><button class="btn alt" id="stop" disabled>Finish early</button></div>
+    <p class="meta" id="micNote" style="margin:10px 0 0"></p>
+  </div>
+  <div class="card">
+    <label for="transcript"><b>Your speech</b> <span class="sub">(filled automatically if your browser supports speech recognition, or type it)</span></label>
+    <textarea id="transcript" placeholder="Your words appear here as you speak..."></textarea>
+    <div class="row" style="margin-top:10px"><button class="btn go" id="speechEval">Evaluate my speech</button><span class="meta" id="speechWc">0 words</span></div>
+  </div>
+  <div class="card eval" id="speechOut"></div>
+</section>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const TABS=[["essay","Essays & articles"],["creative","Creative writing"],["learn","Learn English"],["speech","2-minute speech"]];
+const PROMPTS={
+ essay:["Should schools replace homework with project work?","Write an article: How social media changes the way teenagers talk.","Is it better to live in a city or a village?","Write an opinion essay: Should every student learn a second language?","Article: A day without electricity at school.","Do exams measure intelligence?"],
+ creative:["Write a story that begins: 'The last bus never came.'","Describe a market at dawn using all five senses.","A letter from your future self, ten years from now.","Write a story where a robot learns to laugh.","Describe a place you have never been but feel you know.","Write a dialogue between the moon and the sun."]
+};
+const TOPICS=["The most useful invention of the last 100 years","Why reading books still matters","A skill every teenager should learn","If I were principal for a day","The best way to make a new friend","Should students wear school uniforms?","A place I want to visit and why","How to handle failure","Does technology make us lonelier?","A person who inspires me"];
+const LESSONS=[
+ {t:"Present perfect or past simple?",d:"Use the present perfect for experiences or results that matter now (I have finished my essay). Use the past simple for finished times (I finished it yesterday).",w:[["resilient","able to recover quickly"],["compelling","very convincing or interesting"],["perspective","a particular way of seeing things"]]},
+ {t:"Linking ideas in essays",d:"Move from point to point with linkers: however (contrast), moreover (addition), consequently (result), for instance (example).",w:[["moreover","in addition"],["whereas","in contrast to the fact that"],["consequently","as a result"]]},
+ {t:"Show, don't tell",d:"Instead of 'She was nervous', write 'Her hands trembled as she gripped the pen.' Concrete details make creative writing vivid.",w:[["tremble","shake slightly"],["glimmer","shine faintly"],["hesitate","pause before acting"]]},
+ {t:"Fewer 'very' words",d:"Replace 'very + adjective' with one strong word: very tired = exhausted, very big = enormous, very good = excellent.",w:[["exhausted","extremely tired"],["enormous","extremely large"],["delighted","extremely happy"]]}
+];
+const st={essay:0,creative:0,lesson:0};
+
+/* tabs */
+TABS.forEach(([id,l],i)=>{const b=document.createElement("button");b.textContent=l;b.role="tab";b.dataset.id=id;b.onclick=()=>show(id);$("#tabs").append(b)});
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.id===id))}
+
+/* writing panels */
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const wc=t=>(t.trim().match(/\S+/g)||[]).length;
+["essay","creative"].forEach(k=>{
+ const el=$("#"+k);
+ el.innerHTML=`<div class="card"><p class="prompt" id="${k}P"></p><div class="row"><button class="btn alt" id="${k}N">New prompt</button></div></div>
+ <div class="card"><textarea id="${k}T" placeholder="Start writing here..."></textarea>
+ <div class="row" style="margin-top:10px"><button class="btn go" id="${k}E">Evaluate my writing</button><span class="meta" id="${k}W">0 words</span></div></div>
+ <div class="card eval" id="${k}O"></div>`;
+ const setP=()=>$("#"+k+"P").textContent=rnd(PROMPTS[k]);setP();
+ $("#"+k+"N").onclick=setP;
+ $("#"+k+"T").oninput=e=>$("#"+k+"W").textContent=wc(e.target.value)+" words";
+ $("#"+k+"E").onclick=()=>evaluate(k==="essay"?"essay or article":"creative writing",$("#"+k+"P").textContent,$("#"+k+"T").value,"#"+k+"O","#"+k+"E");
+});
+
+/* learn */
+function lesson(){const L=LESSONS[st.lesson%LESSONS.length];$("#lesson").innerHTML=`<h3 style="margin:0 0 6px">${L.t}</h3><div class="tip">${L.d}</div><div class="vocab">${L.w.map(([a,b])=>`<div><b>${a}</b>${b}</div>`).join("")}</div>`}
+lesson();
+$("#nextLesson").onclick=()=>{st.lesson++;lesson()};
+$("#learnText").oninput=e=>$("#learnWc").textContent=wc(e.target.value)+" words";
+$("#learnEval").onclick=()=>{const L=LESSONS[st.lesson%LESSONS.length];evaluate("English practice sentences","Use this grammar point or these words: "+L.t+"; "+L.w.map(x=>x[0]).join(", "),$("#learnText").value,"#learnOut","#learnEval")};
+
+/* speech */
+let tmr,left=120,rec,recOn=false,base="";
+$("#newTopic").onclick=()=>$("#topic").textContent=rnd(TOPICS);$("#newTopic").onclick();
+const fmt=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$("#micNote").textContent=SR?"Allow microphone access when asked. Speak clearly for up to two minutes.":"Speech recognition isn't available in this browser. Speak aloud, then type what you said (or use Chrome or Safari).";
+function endSpeech(){clearInterval(tmr);tmr=null;if(rec&&recOn){recOn=false;try{rec.stop()}catch(e){}}$("#start").disabled=false;$("#stop").disabled=true;$("#newTopic").disabled=false}
+$("#start").onclick=()=>{
+ left=120;$("#clock").textContent=fmt(left);$("#clock").classList.remove("low");
+ $("#start").disabled=true;$("#stop").disabled=false;$("#newTopic").disabled=true;$("#transcript").value="";base="";
+ if(SR){rec=new SR();rec.continuous=true;rec.interimResults=true;rec.lang="en-US";recOn=true;
+  rec.onresult=e=>{let f="",i="";for(let r=e.resultIndex;r<e.results.length;r++){const t=e.results[r][0].transcript;e.results[r].isFinal?base+=t+" ":i+=t}$("#transcript").value=base+i;$("#speechWc").textContent=wc($("#transcript").value)+" words"};
+  rec.onend=()=>{if(recOn)try{rec.start()}catch(e){}};rec.onerror=ev=>{if(ev.error==="not-allowed"){recOn=false;$("#micNote").textContent="Microphone blocked. Type your speech instead."}};
+  try{rec.start()}catch(e){}}
+ tmr=setInterval(()=>{left--;$("#clock").textContent=fmt(left);$("#clock").classList.toggle("low",left<=15);if(left<=0)endSpeech()},1000);
+};
+$("#stop").onclick=endSpeech;
+$("#transcript").oninput=e=>$("#speechWc").textContent=wc(e.target.value)+" words";
+$("#speechEval").onclick=()=>{const used=120-left;const text=$("#transcript").value;const secs=tmr?used:(left<120?used:0);
+ const fillers=(text.toLowerCase().match(/\b(um+|uh+|like|you know|basically|actually)\b/g)||[]).length;
+ const extra=secs>0?`Speaking time: ${secs} seconds of 120. Words per minute: ${Math.round(wc(text)/(secs/60))}. Filler words detected: ${fillers}.`:`Speaking time unknown. Filler words detected: ${fillers}.`;
+ evaluate("a 2-minute spoken speech (transcript)","Topic: "+$("#topic").textContent,text,"#speechOut","#speechEval",extra)};
+
+/* AI evaluator */
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const li=a=>(a||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+async function evaluate(kind,task,text,outSel,btnSel,extra=""){
+ const out=$(outSel),btn=$(btnSel);out.classList.add("show");
+ if(wc(text)<15){out.innerHTML='<p class="err">Write at least 15 words so the coach has something to evaluate.</p>';return}
+ btn.disabled=true;out.innerHTML="<p>Your coach is reading your work...</p>";
+ try{
+  const sample=await claude.use("sample");
+  if(!sample){out.innerHTML='<p class="err">The AI coach is unavailable here. Open this page in claude.ai while signed in to use it.</p>';return}
+  const r=await sample.json(`You are a kind, honest English teacher for school students. Evaluate ${kind}. Task: ${task}\n${extra}\nStudent text:\n"""${text.slice(0,6000)}"""\n\nReturn ONLY JSON: {"overall":0-100,"level":"CEFR level like B1","scores":{"Content":0-10,"Structure":0-10,"Vocabulary":0-10,"Grammar":0-10,"Clarity":0-10},"strengths":["2-3 specific points"],"improvements":["2-4 specific, actionable points"],"corrections":[{"original":"phrase","better":"fix","why":"short reason"}],"improved_version":"rewrite of one weak paragraph or sentence","next_step":"one practice suggestion"}. For speeches, also weigh pace and filler words and replace Clarity with Delivery. Keep language simple and encouraging.`,{modelTier:"default",cache:false});
+  const sc=Object.entries(r.scores||{}).map(([k,v])=>`<div class="score"><span>${esc(k)}</span><div class="bar"><i style="width:${Math.max(0,Math.min(10,v))*10}%"></i></div><b>${esc(v)}</b></div>`).join("");
+  out.innerHTML=`<div class="row"><div class="big">${esc(r.overall)}<small style="font-size:1rem;color:var(--mut)">/100</small></div><div class="meta" style="margin:0">Estimated level: <b>${esc(r.level)}</b></div></div>${sc}
+  <h3>What worked</h3><ul class="good">${li(r.strengths)}</ul><h3>Improve next</h3><ul class="fix">${li(r.improvements)}</ul>
+  ${(r.corrections||[]).length?`<h3>Corrections</h3><ul>${r.corrections.map(c=>`<li><s class="err">${esc(c.original)}</s> → <b>${esc(c.better)}</b> <span class="meta" style="margin:0">${esc(c.why)}</span></li>`).join("")}</ul>`:""}
+  <h3>Stronger version</h3><div class="rewrite">${esc(r.improved_version)}</div><h3>Try next</h3><p>${esc(r.next_step)}</p>`;
+ }catch(e){out.innerHTML=`<p class="err">${e&&e.code==="not_granted"?"Allow the AI coach when asked, then try again.":"The coach couldn't finish. Check your connection and try again."}</p>`}
+ finally{btn.disabled=false}
+}
+show("essay");
+</script>
+</body>
+</html>
